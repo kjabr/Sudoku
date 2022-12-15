@@ -11,12 +11,15 @@
   <style>
       body {
         max-width: 100%;
+        height: 100vw;
+        overflow: hidden;
         background-color: #434343;
         font-family: Geneva, 'Lucida Grande', 'Lucida Sans Unicode', serif;
       }
 
       .container {
         max-width: 50%;
+        height: 100%;
         margin: auto;
         color: blanchedalmond;
         text-align: center;
@@ -31,7 +34,7 @@
         top: 32%;
         border-radius: 8px;
         margin: auto;
-        transform: translate(-50%, -50%);
+        /*transform: translate(-50%, -50%);*/
         transition: opacity 400ms ease-in;
         background: #F7F6EF;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -308,6 +311,29 @@
         gap: 1.5em;
       }
 
+      .number_picker_animate {
+        opacity: 1;
+        height: 1.6em;
+        margin-top: 2.3em;
+        animation-duration: 1s;
+        animation-name: num_pick_animation;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes num_pick_animation {
+        0%{
+            opacity: 1;
+            height: 1.6em;
+            margin-top: 2.3em;
+        
+        }
+        100%{
+            opacity: 0;
+            height: 0;
+            margin-top: 0;
+        }
+      }
+
       .number {
         border: 2px solid blanchedalmond;
         border-radius: 5px;
@@ -399,6 +425,9 @@
 
       @media (max-width: 800px)  {
 
+        body {
+            margin: 0px;
+        }
         .container{
             max-width: 100%;
         }
@@ -421,6 +450,7 @@
             gap:1.1em;
             margin-top: 2.6em;
             margin-bottom: 2.6em;
+            margin-right: 5px;
         }
 
         .number {
@@ -440,7 +470,7 @@
    <body onload="init_puzzle()" onclick="body_clicked()">
     <h1 class="header">Sudoku</h1>
     <div class="container">
-        <div class="grid_wrapper" onclick="grid_clicked()">
+        <div class="grid_wrapper" id="grid_wrapper" onclick="grid_clicked()">
             <div class="tile1 tile">
                 <div class="inner1"></div>
                 <div class="inner2"></div>
@@ -492,7 +522,7 @@
                 </div>
             </div>
 
-            <div class="tile4 tile">
+            <div class="tile4 tile" id="tile4">
                 <div class="inner1"></div>
                 <div class="inner2"></div>
                 <div class="inner3"></div>
@@ -895,9 +925,24 @@
 
       modal.style.display = modal.style.display == 'none' ? '' : 'none';
       overlay.style.display = overlay.style.display == 'none' ? '' : 'none';
+
+
+    if (modal.style.display == '') {
+        var popup_elem = document.getElementById("popup");
+        var grid_wrapper = document.getElementById("grid_wrapper");
+        var grid_wrapper_bounds = grid_wrapper.getBoundingClientRect();
+        var popup_bounds = popup.getBoundingClientRect();
+        popup_elem.style.top = grid_wrapper_bounds.y + (grid_wrapper_bounds.height / 2) - (popup_bounds.height / 2) + "px";
+        popup_elem.style.left = grid_wrapper_bounds.x + (grid_wrapper_bounds.width / 2) - (popup_bounds.width / 2) + "px";
+    }
+
+
     }
 
     function restart(){
+        var number_picker = document.getElementById("number_picker");
+        number_picker.classList.remove("number_picker_animate");
+
         if (lastelement == "multiple"){
                 var search_colored_numbers = document.querySelectorAll(".number_color");
                 search_colored_numbers.forEach((item, i) => {
@@ -936,6 +981,10 @@
 
     function game_over(){
         var popup_elem = document.getElementById("popup_content");
+        var number_picker = document.getElementById("number_picker");
+
+        number_picker.classList.add("number_picker_animate");
+
 
         if (lastelement == "multiple"){
                 var search_colored_numbers = document.querySelectorAll(".number_color");
