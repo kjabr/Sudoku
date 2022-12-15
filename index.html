@@ -459,11 +459,11 @@
             width: 1.6em;
             justify-content: center;
             align-items: center;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .square{
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .popup {
@@ -1034,6 +1034,16 @@
     function flashing_squares(){
         flash_count = 0;
         flashy_squares = setInterval(flash_square, 1000);
+
+        setTimeout(function(){
+            if (flashy_squares) {
+                clearInterval(flashy_squares);
+                var the_nines = document.querySelectorAll(".number_color");
+                the_nines.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+            } 
+        }, 25000);
 
     }
 
