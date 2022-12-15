@@ -1,1 +1,1302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <base target="_top">
+      <meta charset="UTF-8">
+      <title>Sudoku</title>
+      <link rel="shortcut icon" href="#">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  </head>
+
+  <style>
+      body {
+        max-width: 100%;
+        background-color: #434343;
+        font-family: Geneva, 'Lucida Grande', 'Lucida Sans Unicode', serif;
+      }
+
+      .container {
+        max-width: 50%;
+        margin: auto;
+        color: blanchedalmond;
+        text-align: center;
+      }
+
+      .popup {
+        max-width: 100%;
+        max-height: 100%;
+        position: fixed;
+        z-index: 1101;
+        left: 50%;
+        top: 32%;
+        border-radius: 8px;
+        margin: auto;
+        transform: translate(-50%, -50%);
+        transition: opacity 400ms ease-in;
+        background: #F7F6EF;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+
+      .popup_overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1100;
+
+        opacity: 0.7;
+        background-color: rgba(0,0,0,0.5);
+      }
+
+      .popup_content {
+        margin: 10px;
+        color: black;
+
+      }
+
+      .header {
+        text-align: center;
+        color: blanchedalmond;
+        margin-bottom: 2em;
+      }
+
+      .grid_wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 10em);
+        gap: 0px;
+        grid-auto-rows: minmax(3em, auto);
+        margin: auto;
+        max-width: fit-content;
+        justify-content: center;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        animation: fadein 2s;
+      }
+
+      @keyframes fadein {
+        0% {opacity: 0;}
+        100% {opacity: 1;}
+      }
+      
+      .grid_sub_wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 2em);
+        gap: 0.3em 0.3em;
+        grid-auto-rows: minmax(1em, 2em);
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(102, 61, 20, 0.8);
+        border-radius: 10px;
+
+      }
+      
+      .tile:nth-child(-n+3) {
+        padding: 8px;
+        border-top: 1px solid blanchedalmond;
+      }
+
+      .tile:nth-last-child(-n+3) {
+        padding: 8px;
+        border-bottom: 1px solid blanchedalmond;
+
+      }
+
+      .tile:nth-child(3n+1){
+        padding: 8px;
+        border-left: 1px solid blanchedalmond;
+      }
+
+      .tile:nth-child(5){
+        padding: 8px;
+      }
+
+      .tile:nth-child(3n) {
+        padding: 8px;
+        border-right: 1px solid blanchedalmond;
+      }
+
+      .square {
+        border: 0.5px solid blanchedalmond;
+        background-color: hsl(0, 8%, 79%);
+        opacity: 1;
+        height: 1.5em;
+        width: 1.5em;
+        border-radius: 5px;
+        color: black;
+        font-weight: 900;
+        font-family: Geneva, Verdana, sans-serif;
+        text-shadow: 0 0 2px #fff;
+        z-index: 100;
+        transition-property: width, height;
+        transition-duration: 500ms;
+        
+      }
+
+      @keyframes rotate {
+        0% {transform: rotate(0deg);}
+        100% {transform: rotate(360deg);}
+      }
+
+      .square_rotate_all {
+        animation-name: rotate;
+        animation-duration: 1s;
+        animation-iteration-count: 2;
+        animation-delay: 300ms;
+        /*animation: rotate 2s;*/
+      }
+
+      .squares_rotate {
+        animation-name: rotate;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+      }
+
+      .flying_square {
+        visibility: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border: 0.5px solid blanchedalmond;
+        background-color: hsl(0, 8%, 79%);
+        opacity: 1;
+        height: 1.5em;
+        width: 1.5em;
+        border-radius: 5px;
+        color: black;
+        font-weight: 900;
+        font-family: Geneva, Verdana, sans-serif;
+        text-shadow: 0 0 2px #fff;
+        z-index: 300;
+        transition-property: top, left;
+        transition-duration: 500ms;
+      }
+
+      .tile {
+        background-color: black;
+        border-radius: 10px;
+      }
+
+      .tile1 {
+        position: relative;
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .tile1 > .inner1, .tile4 > .inner1 {
+        /*bottom line for tile1 and tile4*/
+        position: absolute;
+        width: 80%;
+        height: 5px;
+        bottom: -3px;
+        right: 0;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      }
+
+      .tile3 > .inner3, .tile6 > .inner3 {
+        position: absolute;
+        width: 80%;
+        height: 5px;
+        bottom: -3px;
+        left: 0;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      }
+
+      .tile1 > .inner2, .tile2 > .inner3 {
+        position: absolute;
+        height: 80%;
+        width: 5px;
+        bottom: 0;
+        right: -3px;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      } 
+
+      .tile4 > .inner2, .tile5 > .inner3 {
+        position: absolute;
+        height: 100%;
+        width: 5px;
+        bottom: 0;
+        right: -3px;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      }
+
+      .tile7 > .inner1, .tile8 > .inner1 {
+        position: absolute;
+        height: 80%;
+        width: 5px;
+        top: 0;
+        right: -3px;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      }
+
+      .tile2 > .inner2, .tile5 > .inner2 {
+        position: absolute;
+        width: 100%;
+        height: 5px;
+        bottom: -3px;
+        left: 0;
+        background-color: blanchedalmond;
+        border-radius: 10px;
+        z-index: 100;
+      }
+
+      .tile2 {
+        position: relative;
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .tile3 {
+        position: relative;
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .tile4 {
+        position: relative;
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .tile5 {
+        position: relative;
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .tile6 {
+        position: relative;
+        grid-column: 3;
+        grid-row: 2;
+      }
+
+      .tile7 {
+        position: relative;
+        grid-column: 1;
+        grid-row: 3;
+      }
+
+      .tile8 {
+        position: relative;
+        grid-column: 2;
+        grid-row: 3;
+      }
+
+      .tile9 {
+        position: relative;
+        grid-column: 3;
+        grid-row: 3;
+      }
+
+      .number_picker {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        margin-top: 2.3em;
+        gap: 1.5em;
+      }
+
+      .number {
+        border: 2px solid blanchedalmond;
+        border-radius: 5px;
+        width: 1.5em;
+        height: 1.5em;
+        text-align: center;
+        color: black;
+        background-color: hsl(0, 8%, 79%);
+        font-weight: 900;
+        font-family: Geneva, Verdana, sans-serif;
+        opacity: 1;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        z-index: 100;
+
+      }
+
+      .number_color {
+        border-color: orange;
+        border-width: 3px;
+      }
+
+      .red_number {
+        border-color: red;
+        border-width: 3px;
+      }
+
+      .number_hide {
+        animation: hide;
+        animation-duration: 750ms;
+        animation-delay: 100ms;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes hide {
+        5% {opacity: 0.8; width: 1.3em;}
+        20% {opacity: 0.6; width: 1em;}
+        40% {opacity: 0.4; width: 0.7em;}
+        60% {opacity: 0.3; width: 0.4em;}
+        80% {opacity: 0.2; width: 0.2em;}
+        100% {opacity: 0; visibility: hidden; width: 1.5em;}
+      }
+
+      .num_encap {
+        width: 1.5em;
+      }
+
+      .number:hover{
+        background-color: peachpuff;
+        cursor: pointer;
+      }
+
+      .square:hover{
+        background-color: peachpuff;
+        cursor: pointer;
+        width: 1.6em;
+        height: 1.6em;
+      }
+
+
+      .btn1 {
+        background-color: #4CAF50;
+        align-items: center;
+        background-clip: padding-box;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+        box-sizing: border-box;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 16px;
+        justify-content: center;
+        line-height: 1.25;
+        padding: 5px;
+        position: relative;
+        margin-left: 5px;
+        margin-top: 1.5em;
+      }
+
+      .btn1:hover {
+        background-color: #00ace6;
+        box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+      }
+
+      .btn1:active {
+        background-color: #0086b3;
+        box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+      }
+
+      @media (max-width: 800px)  {
+
+        .container{
+            max-width: 100%;
+        }
+
+        .grid_wrapper {
+            grid-template-columns: repeat(3, 7.5em);
+            grid-auto-rows: minmax(2.3em, auto);
+        }
+
+        .grid_sub_wrapper {
+            gap: 0.1em 0.1em;
+            padding-left: 4px;
+        }
+
+        .header {
+            margin-bottom: 1em;
+        }
+
+        .number_picker {
+            gap: 1em;
+        }
+      }
+
+   </style>
+   <body onload="init_puzzle()" onclick="body_clicked()">
+    <h1 class="header">Sudoku</h1>
+    <div class="container">
+        <div class="grid_wrapper" onclick="grid_clicked()">
+            <div class="tile1 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_0_0" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_0_1" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_0_2" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_1_0" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_1_1" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_1_2" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_2_0" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_2_1" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_2_2" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile2 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_0_3" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_0_4" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_0_5" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_1_3" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_1_4" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_1_5" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_2_3" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_2_4" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_2_5" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile3 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_0_6" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_0_7" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_0_8" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_1_6" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_1_7" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_1_8" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_2_6" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_2_7" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_2_8" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile4 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_3_0" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_3_1" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_3_2" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_4_0" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_4_1" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_4_2" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_5_0" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_5_1" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_5_2" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile5 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_3_3" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_3_4" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_3_5" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_4_3" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_4_4" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_4_5" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_5_3" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_5_4" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_5_5" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile6 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_3_6" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_3_7" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_3_8" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_4_6" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_4_7" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_4_8" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_5_6" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_5_7" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_5_8" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile7 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_6_0" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_6_1" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_6_2" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_7_0" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_7_1" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_7_2" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_8_0" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_8_1" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_8_2" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile8 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_6_3" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_6_4" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_6_5" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_7_3" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_7_4" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_7_5" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_8_3" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_8_4" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_8_5" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+            <div class="tile9 tile">
+                <div class="inner1"></div>
+                <div class="inner2"></div>
+                <div class="inner3"></div>
+                <div class="grid_sub_wrapper big_square">
+                    <div class="square1 square" id="square_6_6" onclick="square_clicked(this)"></div>
+                    <div class="square2 square" id="square_6_7" onclick="square_clicked(this)"></div>
+                    <div class="square3 square" id="square_6_8" onclick="square_clicked(this)"></div>
+                    <div class="square4 square" id="square_7_6" onclick="square_clicked(this)"></div>
+                    <div class="square5 square" id="square_7_7" onclick="square_clicked(this)"></div>
+                    <div class="square6 square" id="square_7_8" onclick="square_clicked(this)"></div>
+                    <div class="square7 square" id="square_8_6" onclick="square_clicked(this)"></div>
+                    <div class="square8 square" id="square_8_7" onclick="square_clicked(this)"></div>
+                    <div class="square9 square" id="square_8_8" onclick="square_clicked(this)"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="number_picker" id="number_picker">
+            <div class="num_encap"><div class="number" id="number_1" onclick="square_clicked(this)">1</div></div>
+            <div class="num_encap"><div class="number" id="number_2" onclick="square_clicked(this)">2</div></div>
+            <div class="num_encap"><div class="number" id="number_3" onclick="square_clicked(this)">3</div></div>
+            <div class="num_encap"><div class="number" id="number_4" onclick="square_clicked(this)">4</div></div>
+            <div class="num_encap"><div class="number" id="number_5" onclick="square_clicked(this)">5</div></div>
+            <div class="num_encap"><div class="number" id="number_6" onclick="square_clicked(this)">6</div></div>
+            <div class="num_encap"><div class="number" id="number_7" onclick="square_clicked(this)">7</div></div>
+            <div class="num_encap"><div class="number" id="number_8" onclick="square_clicked(this)">8</div></div>
+            <div class="num_encap"><div class="number" id="number_9" onclick="square_clicked(this)">9</div></div>
+        </div>
+
+        <button type="button" id="restart" class="btn1" onclick="restart()" name="restart">New Game</button>
+        <div class="flying_square" id="flying_square1"></div>
+        <div class="flying_square" id="flying_square2"></div>
+        <div class="flying_square" id="flying_square3"></div>
+        <div class="flying_square" id="flying_square4"></div>
+        <div class="flying_square" id="flying_square5"></div>
+        <div class="flying_square" id="flying_square6"></div>
+        <div class="flying_square" id="flying_square7"></div>
+        <div class="flying_square" id="flying_square8"></div>
+        <div class="flying_square" id="flying_square9"></div>
+        <div id="popup" class="popup" style="display: none;">
+            <div id="popup_content" class="popup_content">
+            </div>
+          </div>
+          <div id="popup_overlay" class="popup_overlay" style="display: none;" onclick="toggle_modal(this)"></div>
+    </div>
+
+   </body>
+   <script>
+    var matrix = {};
+    var play_matrix = {};
+    var test_matrix = {};
+    var number_tracker = {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+    };
+
+    var flashy;
+    var flash_count;
+    var flashy_squares = null;
+    var repeat_flashing_squares = null;
+    var toggle_timer = null;
+
+    var lastelement = "";
+    var last_red = "";
+    var play = true;
+    var solution = "";
+    document.getElementById("popup_content").innerHTML = "Well Done!";
+
+    function init_puzzle(){
+        var row = [];
+        var tile = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        var good = true;
+        var k1 = 0, k2 = 0, count = 0;
+        var diametrically_opposed_test = true;
+        var clear_matrix1, clear_matrix2;
+
+        position_flying_squares();
+        flashing_squares();
+
+        while (good && k1 < 5000){
+            good = false;
+            
+            init_matrix();
+
+            //seeder([0,4,8]);
+            k1++;
+            //console.log("k1: " + k1);
+
+            //var next_set = [0, 4, 8, 2, 6, 1, 3, 5, 7];
+            var next_set = [0, 1, 2, 5, 8, 7, 6, 3, 4];
+
+            next_set.forEach((item1, i1) => {
+                var x_y = which_x_y(item1);
+                x_y[0].forEach((item2, i2) => {
+                    x_y[1].forEach((item3, i3) => {
+                        //console.log("x: " + item2 + " y: " + item3);
+                        var candidates = find_candidates(get_conflicts(item2, item3, item1));
+                        var i;
+                        candidates.length == 0 ? (i = 150, hit_value = "0") : i = 0;
+                        var match = true;
+                        var hit_value = "";
+                        while (i < 50 && match) {
+                            i++;
+                            if (candidates.length == 1){
+                                hit_value = candidates[0];
+                                match = false;
+                                check_match(item2, item3, hit_value) ? i = 150 : null;
+                            }
+                            else {
+                                match = check_match(item2, item3, hit_value = candidates[getRandom(0, (candidates.length-1))]);
+                            }
+                        }
+                        matrix[item2][item3] = hit_value;
+                        i >= 150 || hit_value == "" ? good = true : null;
+                    });
+                });
+            });
+        }
+
+        //console.log("k1: " + k1);
+
+        if (play == true){
+            while (k2 < 50 && diametrically_opposed_test){
+                k2++;
+                clear_matrix1 = Object.keys(play_matrix);
+                clear_matrix2 = Object.keys(test_matrix);
+
+                if (clear_matrix1.length > 0) {
+                    clear_matrix1.forEach((item30) => {
+                        delete play_matrix[item30];
+                    });
+                }
+
+                if (clear_matrix2.length > 0) {
+                    clear_matrix2.forEach((item31) => {
+                        delete test_matrix[item31];
+                    });
+                }
+
+                number_tracker = {
+                    "1": 0,
+                    "2": 0,
+                    "3": 0,
+                    "4": 0,
+                    "5": 0,
+                    "6": 0,
+                    "7": 0,
+                    "8": 0,
+                    "9": 0
+                };
+                
+                //copying matrix to play_matrix... so changes to play_matrix don't change the matrix object
+                play_matrix = JSON.parse(JSON.stringify(matrix));
+                test_matrix = JSON.parse(JSON.stringify(matrix));
+                for (let i = 0; i < 9; i++){
+                    var empty_slots = getRandom(3,6);
+                    //calling numbers_to_remove with the proposed number of slots to empty
+                    var to_remove = numbers_to_remove(empty_slots, i);
+                    var tile_coordinates = which_x_y(i);
+                    tile_coordinates[0].forEach((item1, i1) => {
+                        tile_coordinates[1].forEach((item2, i2) => {
+                            //test_matrix is the opposite of the play_matrix
+                            //it contains the proposed solution numbers. The idea is to test against the test_matrix set for
+                            //the diametrically opposed problem and any issues with the set
+                            to_remove.includes(play_matrix[item1][item2]) ? play_matrix[item1][item2] = "" : test_matrix[item1][item2] = "";
+                        });
+                    });
+                }
+                diametrically_opposed_test = diametrically_opposed(test_matrix);
+            }
+            //console.log("k2: " + k2);
+            render(play_matrix);
+        }
+        else {
+            console.log("render matrix");
+            render(matrix);
+        }
+
+    }
+
+    function diametrically_opposed(test){
+        var list_of_numbers = [];
+        var list_of_rows_columns = [[0,1], [0,2], [1,2], [3,4], [3,5], [4,5], [6,7], [6,8], [7,8]];
+        var find_columns = {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: []
+        };
+        var diametrically_opposed_test = false, test_intersection = false;
+        var result1 = [];
+        var result2 = [];
+        for (y1=0; y1<9; y1++){
+            for (y2=0; y2<9; y2++){
+                find_columns[y1].push(test[y2][y1]);
+            }
+        }
+        /*
+        //test for rows
+        list_of_rows_columns.forEach((item10, i10) => {
+            (intersection(test[item10[0]], test[item10[1]])).length > 1 ? 
+                result1.push(intersection(test[item10[0]], test[item10[1]])) : null;
+                console.log("intersectionX: " + intersection(test[item10[0]], test[item10[1]]));
+        });
+
+        //test for columns
+        list_of_rows_columns.forEach((item11, i11) => {
+            (intersection(find_columns[item11[0]], find_columns[item11[1]])).length > 1 ? 
+                result2.push(intersection(find_columns[item11[0]], find_columns[item11[1]])) : null;
+                console.log("intersectionY: " + intersection(find_columns[item11[0]], find_columns[item11[1]]));
+        });
+        console.log("result1: " + result1);
+        console.log("result2: " + result2); */
+
+        list_of_rows_columns.forEach((item10, i10) => {
+            test_intersection = intersection(test[item10[0]], test[item10[1]], item10[0], item10[1]);
+            test_intersection == true ? diametrically_opposed_test = true : null;
+            //console.log("row1: " + item10[0] + " row2: " + item10[1]);
+        });
+
+        list_of_rows_columns.forEach((item11, i11) => {
+            test_intersection = intersection(find_columns[item11[0]], find_columns[item11[1]], item11[0], item11[1]);
+            //console.log("column1: " + item11[0] + " column2: " + item11[1]);
+            test_intersection == true ? diametrically_opposed_test = true : null;
+        });
+
+        return diametrically_opposed_test;
+    }
+
+    function intersection(a,b,c,d){
+        var index_list = {};
+        var values = {};
+        var index_list_keys = Object.keys(index_list);
+        var values_keys = Object.keys(values);
+        var diametrically_opposed = false;
+
+        //clear out the object used to track intersections
+        if (index_list_keys.length > 0) {
+            index_list_keys.forEach((item19, i19) => {
+                delete index_list[item19];
+            });
+        }
+
+        if (values_keys.length > 0) {
+            values_keys.forEach((item20, i20) => {
+                delete values[item20];
+            });
+            }
+
+        var t;
+        if (b.length > a.length) t = b, b = a, a = t;
+        a.forEach((item21, i21) => {
+            if (b.includes(item21) && item21 != "") {
+                if (index_list[item21]){
+                    i21 < b.indexOf(item21) ? index_list[item21].push(i21, b.indexOf(item21)) 
+                        : index_list[item21].push(b.indexOf(item21), i21);
+                }
+                else {
+                    i21 < b.indexOf(item21) ? index_list[item21] = [i21, b.indexOf(item21)]
+                        : index_list[item21] = [b.indexOf(item21), i21];
+                }
+            }
+        });
+
+        for (key in index_list){
+            values[index_list[key]] = values.hasOwnProperty(index_list[key]) ? values[index_list[key]] + 1 : 1;
+            values[index_list[key]] > 1 ? diametrically_opposed = true : null;
+        }
+        /*
+        if (diametrically_opposed) {
+            console.log("c: " + c + " d: " + d);
+            console.log("index_list: ", index_list);
+            console.log("values: ", values);
+        } */
+
+        return diametrically_opposed;
+    }
+
+    function old_intersection(a,b){
+        var t;
+        if (b.length > a.length) t = b, b = a, a = t;
+        return a.filter(function (e) {
+            return b.indexOf(e) > -1 && e!= "";
+        });
+    }
+
+    function position_flying_squares(){
+        var find_numbers = document.querySelectorAll(".number");
+        find_numbers.forEach((item, i) => {
+            var number_pos = item.getBoundingClientRect();
+            var flying_elem = document.getElementById("flying_square"+(i+1));
+            flying_elem.style.top = number_pos.y+"px";
+            flying_elem.style.left = number_pos.x+"px";
+        });
+    }
+
+    function toggle_modal(elem){
+      var modal = document.getElementById("popup");
+      var overlay = document.getElementById("popup_overlay");
+      overlay.style.display == '' ?  event.stopPropagation() : null;
+
+      toggle_timer ? clearInterval(toggle_timer) : null;
+
+      modal.style.display = modal.style.display == 'none' ? '' : 'none';
+      overlay.style.display = overlay.style.display == 'none' ? '' : 'none';
+    }
+
+    function restart(){
+        if (lastelement == "multiple"){
+                var search_colored_numbers = document.querySelectorAll(".number_color");
+                search_colored_numbers.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+            }
+        if (lastelement != "multiple" && lastelement != ""){
+                lastelement.classList.remove("number_color");
+            }
+
+        var hidden_numbers = document.querySelectorAll(".number_hide");
+        hidden_numbers.forEach((item, i) => {
+            item.classList.remove("number_hide");    
+        });
+
+        last_red != "" ? last_red.classList.remove("red_number") : null;
+                    
+        lastelement = "";
+        last_red = "";
+        solution = "";
+        number_tracker = {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0
+         };
+
+        body_clicked();
+        init_puzzle();
+    }
+
+    function game_over(){
+        var popup_elem = document.getElementById("popup_content");
+
+        if (lastelement == "multiple"){
+                var search_colored_numbers = document.querySelectorAll(".number_color");
+                search_colored_numbers.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+            }
+        if (lastelement != "multiple" && lastelement != ""){
+                lastelement.classList.remove("number_color");
+            }
+
+        last_red != "" ? last_red.classList.remove("red_number") : null;
+                    
+        lastelement = "";
+        last_red = "";
+        solution = "";
+
+        var all_squares = document.querySelectorAll(".square");
+        all_squares.forEach((item, i) => {
+            item.classList.add("square_rotate_all");
+        });
+
+        setTimeout(function(){
+            var elem_square_rotate = document.querySelectorAll(".square_rotate_all");
+            elem_square_rotate.forEach((item, i) => {
+                item.classList.remove("square_rotate_all");
+            });
+        }, 2000);
+
+        popup_elem.innerHTML = "Well done!";
+        if (flashy_squares) clearInterval(flashy_squares);
+
+        toggle_modal();
+        //repeat_flashing_squares = setInterval(flashing_squares, 10000);
+        flashing_squares();
+        toggle_timer = setTimeout(function(){
+            //toggle_modal();
+            document.getElementById('popup_overlay').click();
+        }, 4000);
+    }
+
+    function flashing_squares(){
+        flash_count = 0;
+        flashy_squares = setInterval(flash_square, 1000);
+
+    }
+
+    function flash_square(){
+        var all_squares = document.querySelectorAll('.square');
+        flash_count == 9 ? flash_count = 0 : null;
+        all_squares.forEach((item, i) => {
+            if (item.textContent == (flash_count) && flash_count != 0){
+                item.classList.remove("number_color");
+
+            }
+            if (flash_count == 0 && item.textContent == 9){
+                item.classList.contains('number_color') ? item.classList.remove('number_color') : null;
+            }
+            if (item.textContent == (flash_count+1)){
+                item.classList.add("number_color");
+            }
+        });
+        flash_count++;
+    }
+
+    function body_clicked(){
+        if (flashy_squares) clearInterval(flashy_squares);
+        if (repeat_flashing_squares) clearInterval(repeat_flashing_squares);
+        var the_nines = document.querySelectorAll(".number_color");
+                the_nines.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+    }
+
+    function grid_clicked(){
+        event.stopPropagation();
+        if (flashy_squares) clearInterval(flashy_squares);
+        if (repeat_flashing_squares) clearInterval(repeat_flashing_squares);
+
+    }
+
+    function numbers_to_remove(value, tile_number){
+        //value is how many numbers to remove for a given tile... value chosen as a random number
+        var tile = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        var pick_mm = 0;
+        for (mm = 0; mm < 9; mm++){
+            //exclude numbers that were picked more than 6 times (ie 7). So worse case 2 of the 
+            //same number are left on the board
+            number_tracker[toString(mm+1)] > 6 ? tile = tile.filter(somenumber => somenumber !== toString(mm)) : null;
+            tile_number == 8 && number_tracker[toString(mm+1)] == 0 ? pick_mm = mm : pick_mm = 0;
+        }
+        var remove_list = [];
+        for (i = 0; i < value; i++){
+            //var which_number = tile[getRandom(0, (tile.length-1))];
+            var which_number = pick_weighted_random(tile);
+            pick_mm !=0 ? which_number = pick_mm : null;
+            number_tracker[which_number]++;
+            remove_list.push(which_number);
+            tile = tile.filter(somenumber => somenumber !== which_number);
+        }
+
+        return remove_list;
+    }
+
+    function pick_weighted_random(set){
+        var candidate_list = [];
+        var pick_one = 0;
+        for (i8 = 0; i8 < set.length; i8++){
+            for (n = 0; n < (9-number_tracker[set[i8]]); n++){
+                candidate_list.push(set[i8]);
+            }
+        }
+        pick_one = candidate_list[getRandom(0, (candidate_list.length-1))];
+        return pick_one;
+    }
+
+    function get_conflicts(x,y,z){
+        var conflicts = [];
+        conflicts.push(...matrix[x]);
+        for (let n = 0; n < 9; n++) {
+            conflicts.push(...matrix[n][y]);
+        }
+
+        var x_y = which_x_y(z);
+        x_y[0].forEach((item1, i1) => {
+            x_y[1].forEach((item2, i2) => {
+                conflicts.push(...matrix[item1][item2]);
+            });
+        });
+
+        return conflicts;
+    }
+
+    function init_matrix(){
+            //init matrix
+            var tile = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+            tile.forEach((item, n1) => {
+            tile.forEach((item, n2) => {
+                matrix[n1] ? matrix[n1][n2] = "0" : (matrix[n1]=[], matrix[n1][n2] = "0");
+            });
+            });
+    }
+
+    function find_candidates(conflicts){
+        var set = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        var possible_set = [...set];
+        var somenumber = "";
+        conflicts.forEach((item, i) => {
+            if (item != "0"){
+                set = set.filter(somenumber => somenumber !== item);
+            }
+        });
+        //console.log(set);
+        return set;
+    }
+
+    function shiftLeft(arr, pos){
+        var x1 = "";
+        var x2 = "";
+        for (var i = 0; i < pos ; i++){
+            var x = arr[0];
+
+            for (var n = 0; n < arr.length; n++){
+                arr[n] = arr[n+1] || "0";
+            }
+            arr[arr.length-1] = x;
+
+        }
+        /*
+        //flip
+        x1 = arr[arr.length-1];
+        x2 = arr[arr.length-3];
+        arr[arr.length-1] = x2;
+        arr[arr.length-3] = x1;*/
+        console.log(arr);
+        return arr;
+    }
+
+    function generate_set(tile){
+            var candidate_tile = [];
+            var target_index = 0;
+            var i = 0;
+            while (candidate_tile.length < 9 && i < 100){
+                i++;
+                var candidate_num = "";
+                var hit = false;
+
+                candidate_tile.includes(candidate_num = tile[getRandom(0, (tile.length-1))]) ? null 
+                    : (candidate_tile.push(candidate_num), tile = tile.filter(somenumber => somenumber !== candidate_num));
+
+                //the tile.filter popups the selected random number from the set.. which reduces the iterations to find
+                //9 random numbers
+            }
+            return candidate_tile;
+            
+    }
+
+    function which_x_y(tile){
+        var x, y;
+        var coord = [];
+
+        switch (tile) {
+            case 0: return ([[0, 1, 2], [0, 1, 2]]);
+            case 1: return ([[0, 1, 2], [3, 4, 5]]);
+            case 2: return ([[0, 1, 2], [6, 7, 8]]);
+            case 3: return ([[3, 4, 5], [0, 1, 2]]);
+            case 4: return ([[3, 4, 5], [3, 4, 5]]);
+            case 5: return ([[3, 4, 5], [6, 7, 8]]);
+            case 6: return ([[6, 7, 8], [0, 1, 2]]);
+            case 7: return ([[6, 7, 8], [3, 4, 5]]);
+            case 8: return ([[6, 7, 8], [6, 7, 8]]);
+        }
+    }
+
+    function check_match(x, y, value) {
+        var candidate_x = [];
+        var candidate_y = [];
+        var candidate_tile = [];
+        var tile_contents = [];
+        var tile_id = 0;
+        var which_tile;
+
+        if (x >= 0 && x < 3) {
+            y >= 0 && y < 3 ? which_tile = 0 : null;
+            y >= 3 && y < 6 ? which_tile = 3 : null;
+            y >= 6 && y < 9 ? which_tile = 6 : null; 
+        }
+        if (x >= 3 && x < 6) {
+            y >= 0 && y < 3 ? which_tile = 1 : null;
+            y >= 3 && y < 6 ? which_tile = 4 : null;
+            y >= 6 && y < 9 ? which_tile = 7 : null; 
+        }
+        if (x >= 6 && x < 9) {
+            y >= 0 && y < 3 ? which_tile = 2 : null;
+            y >= 3 && y < 6 ? which_tile = 5 : null;
+            y >= 6 && y < 9 ? which_tile = 8 : null; 
+        }
+
+        for (let n0 = 0; n0 < 9; n0=n0+3) {
+            for (let n1 = 0; n1 < 9; n1=n1+3) {
+                for (let n2 = 0; n2 < 3; n2++) {
+                    for (let n3 = 0; n3 < 3; n3++) {
+                        tile_contents[tile_id] ? tile_contents[tile_id].push(...matrix[n2+n1][n3+n0]) :
+                            (tile_contents[tile_id] = [], tile_contents[tile_id].push(...matrix[n2+n1][n3+n0]));
+                    }
+                }
+                tile_id++;
+            }
+        }
+
+        for (let i = 0; i < 9; i++){
+            candidate_x.push(...matrix[x][i]);
+            candidate_y.push(...matrix[i][y]);
+        }
+
+       // console.log(which_tile);
+
+        return (candidate_x.includes(value) || candidate_y.includes(value) || tile_contents[which_tile].includes(value));
+    }
+
+    function getRandom(min, max){
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function render(number_set){
+        //square_0_3
+        for (let x = 0; x < 9; x++){
+            for (let y = 0; y < 9; y++){
+                document.getElementById("square_" + x + "_" + y).innerHTML = number_set[x][y];
+            }
+        }
+    }
+
+    function square_clicked(elem){
+        event.stopPropagation(); //don't propagate the click to body()
+        if (repeat_flashing_squares) clearInterval(repeat_flashing_squares); //turn off flashing squares timer
+        if (flashy_squares) {
+            clearInterval(flashy_squares);
+            var search_colored_numbers = document.querySelectorAll(".number_color");
+                search_colored_numbers.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+        }
+
+        //var rect =elem.getBoundingClientRect();
+        //var width = elem.offsetWidth;
+        //var height = elem.offsetHeight;
+        if (elem.id.split('_')[0] == 'square'){
+            //number clicked
+            if (lastelement == "multiple"){
+                var search_colored_numbers = document.querySelectorAll(".number_color");
+                search_colored_numbers.forEach((item, i) => {
+                    item.classList.remove("number_color");
+                });
+            }
+            if (lastelement != "multiple" && lastelement != ""){
+                lastelement.classList.remove("number_color");
+            }
+            if (elem.textContent != ""){
+                //the number slot is not empty logic (ie select other like colors)
+                var number_search = document.querySelectorAll(".square");
+                number_search.forEach((item, i) => {
+                    elem.textContent == item.textContent ? item.classList.add("number_color") : null;
+                });
+                last_red != "" ? (last_red.classList.remove("red_number"), last_red = "") : null;
+                lastelement = "multiple";
+                solution = "";
+            }
+            if (elem.textContent == ""){
+                //the number slot is empty logic... change its color and remmeber which one it is (lastelement variable)
+                if (elem != last_red && last_red != ""){
+                    last_red.classList.remove("red_number"); 
+                    last_red = "";
+                    elem.classList.add("number_color"); 
+
+                }
+                else {
+                    elem.classList.add("number_color"); 
+                }
+                //elem == last_red ? null : (last_red.classList.remove("red_number"), elem.classList.add("number_color"), last_red = "");
+
+                lastelement = elem;
+                solution = matrix[elem.id.split('_')[1]][elem.id.split('_')[2]];
+            }
+
+        }
+        else if (elem.id.split('_')[0] == 'number' && solution !=""){
+            //a number is clicked and previously a square on the board was selected in an empty slot (hence solution != "")
+
+            if (solution == elem.textContent){
+                //the number clicked is the solution for the square that was previously clicked
+                var flying_square = document.getElementById("flying_square"+elem.textContent);
+                var num_location = elem.getBoundingClientRect();
+                var square_location = lastelement.getBoundingClientRect();
+                flying_square.innerHTML = elem.textContent;
+                flying_square.style.visibility = "visible";
+                flying_square.style.top = square_location.y+"px";
+                flying_square.style.left = square_location.x+"px";
+                
+                setTimeout(function(){
+                    flying_square.style.transitionDuration = "1ms";
+                    flying_square.style.visibility = "hidden";
+                    flying_square.style.top = num_location.y+"px";
+                    flying_square.style.left = num_location.x+"px";
+                    flying_square.style.transitionDuration = "500ms";
+                }, 600);
+
+                lastelement.innerHTML = solution;
+                var number_search = document.querySelectorAll(".square");
+                number_search.forEach((item, i) => {
+                    elem.textContent == item.textContent ? item.classList.add("number_color") : null;
+                });
+                last_red != "" ? (last_red.classList.remove("red_number"), last_red = "") : null;
+                lastelement = "multiple";
+                solution = "";
+
+                //if 9 of the same color have been matched then hide the number
+                var how_many_matches = document.querySelectorAll(".number_color");
+                if (how_many_matches.length == 9){
+                    elem.classList.add("number_hide");
+                }
+
+                //find out if all squares have been filled (ie end game)
+                //so 81 non-empty squares
+                var count_squares = Array.from(document.querySelectorAll(".square"));
+                var count_squares = count_squares.filter(some_square => some_square.textContent !== "");
+                count_squares.length == 81 ? game_over() : null;
+            }
+            else {
+                lastelement.classList.add("red_number"); //if the number clicked doesn't match the solution for that square
+                last_red = lastelement;
+            }
+        }
+
+    }
+    
+   </script>
+
+</html>
 
