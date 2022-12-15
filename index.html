@@ -1274,6 +1274,47 @@
         }
     }
 
+    function completed_row_column(elem) {
+        //square id looks like this: square_8_8
+        var count_row = 0, count_column = 0;
+        var row = elem.id.split('_')[1];
+        var column = elem.id.split('_')[2];
+
+        var square_elements = document.querySelectorAll('.square');
+        square_elements.forEach((item31, i31) => {
+            (item31.id).split('_')[1] == row && item31.innerHTML != "" ? count_row++ : null;
+            (item31.id).split('_')[2] == column && item31.innerHTML != "" ? count_column++ : null;
+        });
+
+        if (count_row == 9 && count_column != 9 ) {
+            square_elements.forEach((item32, i32) => {
+                (item32.id).split('_')[1] == row ? item32.classList.add("square_rotate_all") : null;
+            });
+        }
+
+        if (count_row != 9 && count_column == 9) {
+            square_elements.forEach((item33, i33) => {
+                (item33.id).split('_')[2] == column ? item33.classList.add("square_rotate_all") : null;
+            });
+        }
+
+        if (count_row == 9 && count_column == 9) {
+            square_elements.forEach((item34, i34) => {
+                (item34.id).split('_')[1] == row ? item34.classList.add("square_rotate_all") : null;
+                (item34.id).split('_')[2] == column ? item34.classList.add("square_rotate_all") : null;
+
+            });
+        }
+
+        setTimeout(function(){
+            var elem_square_rotate = document.querySelectorAll(".square_rotate_all");
+            elem_square_rotate.forEach((item, i) => {
+                item.classList.remove("square_rotate_all");
+            });
+        }, 1000);
+        
+    }
+
     function square_clicked(elem){
         event.stopPropagation(); //don't propagate the click to body()
         if (repeat_flashing_squares) clearInterval(repeat_flashing_squares); //turn off flashing squares timer
@@ -1349,6 +1390,9 @@
                 }, 600);
 
                 lastelement.innerHTML = solution;
+
+                completed_row_column(lastelement);
+
                 var number_search = document.querySelectorAll(".square");
                 number_search.forEach((item, i) => {
                     elem.textContent == item.textContent ? item.classList.add("number_color") : null;
