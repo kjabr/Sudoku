@@ -350,6 +350,30 @@
 
       }
 
+      .number:focus, .number:hover {
+        animation: wiggle 1s infinite;
+        background-color: peachpuff;
+        cursor: pointer;
+      }
+
+      @keyframes wiggle {
+        0% {
+            transform: rotate(3deg);
+        }
+        25% {
+            transform: rotate(-3deg);
+        }
+        50% {
+            transform: rotate(3deg);
+        }
+        75% {
+            transform: rotate(-3deg);
+        }
+        100% {
+            transform: rotate(3deg);
+        }
+        }
+
       .number_color {
         border-color: orange;
         border-width: 3px;
@@ -380,10 +404,10 @@
         width: 1.5em;
       }
 
-      .number:hover{
+      /*.number:hover{
         background-color: peachpuff;
         cursor: pointer;
-      }
+      } */
 
       .square:hover{
         background-color: peachpuff;
@@ -475,7 +499,7 @@
    <body onload="init_puzzle()" onclick="body_clicked()">
     <h1 class="header">Sudoku</h1>
     <div class="container">
-        <div class="grid_wrapper" id="grid_wrapper" onclick="grid_clicked()">
+        <div class="grid_wrapper" id="grid_wrapper" onclick="grid_clicked(this)">
             <div class="tile1 tile">
                 <div class="inner1"></div>
                 <div class="inner2"></div>
@@ -876,6 +900,9 @@
 
         var t;
         if (b.length > a.length) t = b, b = a, a = t;
+        //index_list records intersection index for a given number
+        //indexes are recording in ascending order. So if 3 appears in index 5 and 7, and 4 appears in 7 and 5 then
+        //both would see a matching indexes at 5 and 7
         a.forEach((item21, i21) => {
             if (b.includes(item21) && item21 != "") {
                 if (index_list[item21]){
@@ -889,16 +916,12 @@
             }
         });
 
+        //next using the values object count the intersection occurances (ie how often did 5,7 indexes appear).
+        //if more than twice then we have a match
         for (key in index_list){
             values[index_list[key]] = values.hasOwnProperty(index_list[key]) ? values[index_list[key]] + 1 : 1;
             values[index_list[key]] > 1 ? diametrically_opposed = true : null;
         }
-        /*
-        if (diametrically_opposed) {
-            console.log("c: " + c + " d: " + d);
-            console.log("index_list: ", index_list);
-            console.log("values: ", values);
-        } */
 
         return diametrically_opposed;
     }
@@ -1074,7 +1097,7 @@
                 });
     }
 
-    function grid_clicked(){
+    function grid_clicked(elem){
         event.stopPropagation();
         if (flashy_squares) clearInterval(flashy_squares);
         if (repeat_flashing_squares) clearInterval(repeat_flashing_squares);
@@ -1155,28 +1178,6 @@
         });
         //console.log(set);
         return set;
-    }
-
-    function shiftLeft(arr, pos){
-        var x1 = "";
-        var x2 = "";
-        for (var i = 0; i < pos ; i++){
-            var x = arr[0];
-
-            for (var n = 0; n < arr.length; n++){
-                arr[n] = arr[n+1] || "0";
-            }
-            arr[arr.length-1] = x;
-
-        }
-        /*
-        //flip
-        x1 = arr[arr.length-1];
-        x2 = arr[arr.length-3];
-        arr[arr.length-1] = x2;
-        arr[arr.length-3] = x1;*/
-        console.log(arr);
-        return arr;
     }
 
     function generate_set(tile){
