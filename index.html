@@ -780,7 +780,7 @@
                 play_matrix = JSON.parse(JSON.stringify(matrix));
                 test_matrix = JSON.parse(JSON.stringify(matrix));
                 for (let i = 0; i < 9; i++){
-                    var empty_slots = getRandom(3,6);
+                    var empty_slots = getRandom(3,7);
                     //calling numbers_to_remove with the proposed number of slots to empty
                     var to_remove = numbers_to_remove(empty_slots, i);
                     var tile_coordinates = which_x_y(i);
