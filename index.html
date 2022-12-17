@@ -685,6 +685,7 @@
     var flash_count;
     var flashy_squares = null;
     var repeat_flashing_squares = null;
+    var clear_flashy_squares = null;
     var toggle_timer = null;
 
     var lastelement = "";
@@ -1085,7 +1086,8 @@
         flash_count = 0;
         flashy_squares = setInterval(flash_square, 1000);
 
-        setTimeout(function(){
+       if (flashy_squares) {
+        clear_flashy_squares = setTimeout(function(){
             if (flashy_squares) {
                 clearInterval(flashy_squares);
                 var the_nines = document.querySelectorAll(".number_color");
@@ -1094,6 +1096,7 @@
                 });
             } 
         }, 25000);
+       }
 
     }
 
@@ -1116,7 +1119,11 @@
     }
 
     function body_clicked(){
+        event.stopPropagation();
+
         if (flashy_squares) clearInterval(flashy_squares);
+        if (clear_flashy_squares) clearTimeout(clear_flashy_squares);
+
         if (repeat_flashing_squares) clearInterval(repeat_flashing_squares);
         var the_nines = document.querySelectorAll(".number_color");
                 the_nines.forEach((item, i) => {
@@ -1127,6 +1134,8 @@
     function grid_clicked(elem){
         event.stopPropagation();
         if (flashy_squares) clearInterval(flashy_squares);
+        if (clear_flashy_squares) clearTimeout(clear_flashy_squares);
+
         if (repeat_flashing_squares) clearInterval(repeat_flashing_squares);
 
     }
@@ -1346,6 +1355,7 @@
     function square_clicked(elem){
         event.stopPropagation(); //don't propagate the click to body()
         if (repeat_flashing_squares) clearInterval(repeat_flashing_squares); //turn off flashing squares timer
+        if (clear_flashy_squares) clearTimeout(clear_flashy_squares);
         if (flashy_squares) {
             clearInterval(flashy_squares);
             var search_colored_numbers = document.querySelectorAll(".number_color");
