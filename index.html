@@ -808,6 +808,7 @@
     function diametrically_opposed(test){
         var list_of_numbers = [];
         var list_of_rows_columns = [[0,1], [0,2], [1,2], [3,4], [3,5], [4,5], [6,7], [6,8], [7,8]];
+        var list_of_triples = [[0,1,2], [3,4,5], [6,7,8]];
         var find_columns = {
             0: [],
             1: [],
@@ -828,33 +829,30 @@
             }
         }
         /*
-        //test for rows
         list_of_rows_columns.forEach((item10, i10) => {
-            (intersection(test[item10[0]], test[item10[1]])).length > 1 ? 
-                result1.push(intersection(test[item10[0]], test[item10[1]])) : null;
-                console.log("intersectionX: " + intersection(test[item10[0]], test[item10[1]]));
-        });
-
-        //test for columns
-        list_of_rows_columns.forEach((item11, i11) => {
-            (intersection(find_columns[item11[0]], find_columns[item11[1]])).length > 1 ? 
-                result2.push(intersection(find_columns[item11[0]], find_columns[item11[1]])) : null;
-                console.log("intersectionY: " + intersection(find_columns[item11[0]], find_columns[item11[1]]));
-        });
-        console.log("result1: " + result1);
-        console.log("result2: " + result2); */
-
-        list_of_rows_columns.forEach((item10, i10) => {
-            test_intersection = intersection(test[item10[0]], test[item10[1]], item10[0], item10[1]);
+            //check for 2 rows at a time
+            test_intersection = intersection(test[item10[0]], test[item10[1]], "", "double");
             test_intersection == true ? diametrically_opposed_test = true : null;
-            //console.log("row1: " + item10[0] + " row2: " + item10[1]);
         });
 
         list_of_rows_columns.forEach((item11, i11) => {
-            test_intersection = intersection(find_columns[item11[0]], find_columns[item11[1]], item11[0], item11[1]);
-            //console.log("column1: " + item11[0] + " column2: " + item11[1]);
+            //check for 2 columns at a time
+            test_intersection = intersection(find_columns[item11[0]], find_columns[item11[1]], "", "double");
             test_intersection == true ? diametrically_opposed_test = true : null;
-        });
+        }); */
+
+            list_of_triples.forEach((item12, i12) => {
+                //check for 3 rows at a time
+                test_intersection = intersection(test[item12[0]], test[item12[1]], test[item12[2]], "triple");
+                test_intersection == true ? diametrically_opposed_test = true : null;
+            });
+
+            list_of_triples.forEach((item12, i12) => {
+                //check for 3 columns at a time
+                test_intersection = intersection(find_columns[item12[0]], find_columns[item12[1]], find_columns[item12[2]], "triple");
+                test_intersection == true ? diametrically_opposed_test = true : null;
+            });
+        
 
         return diametrically_opposed_test;
     }
@@ -865,6 +863,7 @@
         var index_list_keys = Object.keys(index_list);
         var values_keys = Object.keys(values);
         var diametrically_opposed = false;
+        var quick_test = false;
 
         //clear out the object used to track intersections
         if (index_list_keys.length > 0) {
@@ -879,30 +878,77 @@
             });
             }
 
-        var t;
-        if (b.length > a.length) t = b, b = a, a = t;
-        //index_list records intersection index for a given number
-        //indexes are recording in ascending order. So if 3 appears in index 5 and 7, and 4 appears in 7 and 5 then
-        //both would see a matching indexes at 5 and 7
-        a.forEach((item21, i21) => {
-            if (b.includes(item21) && item21 != "") {
-                if (index_list[item21]){
-                    i21 < b.indexOf(item21) ? index_list[item21].push(i21, b.indexOf(item21)) 
-                        : index_list[item21].push(b.indexOf(item21), i21);
+        if (d == "double"){
+            var t;
+            if (b.length > a.length) t = b, b = a, a = t;
+            //index_list records intersection index for a given number
+            //indexes are recording in ascending order. So if 3 appears in index 5 and 7, and 4 appears in 7 and 5 then
+            //both would see a matching indexes at 5 and 7
+                a.forEach((item21, i21) => {
+                if (b.includes(item21) && item21 != "") {
+                    if (index_list[item21]){
+                        //ensure to record ascending index order
+                        i21 < b.indexOf(item21) ? index_list[item21].push(i21, b.indexOf(item21)) 
+                            : index_list[item21].push(b.indexOf(item21), i21);
+                    }
+                    else {
+                        //also ensuring ascending index order
+                        i21 < b.indexOf(item21) ? index_list[item21] = [i21, b.indexOf(item21)]
+                            : index_list[item21] = [b.indexOf(item21), i21];
+                    }
                 }
-                else {
-                    i21 < b.indexOf(item21) ? index_list[item21] = [i21, b.indexOf(item21)]
-                        : index_list[item21] = [b.indexOf(item21), i21];
-                }
-            }
         });
-
-        //next using the values object count the intersection occurances (ie how often did 5,7 indexes appear).
-        //if more than twice then we have a match
-        for (key in index_list){
-            values[index_list[key]] = values.hasOwnProperty(index_list[key]) ? values[index_list[key]] + 1 : 1;
-            values[index_list[key]] > 1 ? diametrically_opposed = true : null;
+            //next using the values object count the intersection occurances (ie how often did 5,7 indexes appear).
+            //if more than twice then we have a match
+            for (key in index_list){
+                values[index_list[key]] = values.hasOwnProperty(index_list[key]) ? values[index_list[key]] + 1 : 1;
+                values[index_list[key]] > 1 ? diametrically_opposed = true : null;
+            }
         }
+        if (d == "triple") {
+            index_list = {
+                0: [],
+                1: [],
+                2: [],
+                3: [],
+                4: [],
+                5: [],
+                6: [],
+                7: [],
+                8: []
+            }
+
+            var combo_list = [['1', '2'], ['1', '3'], ['1', '4'], ['1', '5'], ['1', '6'], ['1', '7'], ['1', '8'], ['1', '9'],
+                                ['2', '3'], ['2', '4'], ['2', '5'], ['2', '6'], ['2', '7'], ['2', '8'], ['2', '9'],
+                                ['3', '4'], ['3', '5'], ['3', '6'], ['3', '7'], ['3', '8'], ['3', '9'],
+                                ['4', '5'], ['4', '6'], ['4', '7'], ['4', '8'], ['4', '9'],
+                                ['5', '6'], ['5', '7'], ['5', '8'], ['5', '9'],
+                                ['6', '7'], ['6', '8'], ['6', '9'],
+                                ['7', '8'], ['7', '9'],
+                                ['8', '9']] ;
+            //need to check that two numbers share the same row or column at least 3 times
+            for (i=0; i <9; i++){
+                index_list[i].push(a[i], b[i], c[i]);
+                index_list[i] = index_list[i].filter(e => e != "");
+            }
+
+            index_list_keys = Object.keys(index_list);
+
+            combo_list.forEach((item22, i22) => {
+                index_list_keys.forEach((item23, i23) => {
+                    //values[JSON.stringify(item22)] = 0;
+                    if (index_list[item23].includes(item22[0]) && index_list[item23].includes(item22[1])) {
+                        values[JSON.stringify(item22)] ? values[JSON.stringify(item22)]++ 
+                            : values[JSON.stringify(item22)] = 1;
+                        values[JSON.stringify(item22)] >= 2 ? diametrically_opposed = true : null;
+                    }
+                });
+            });
+            
+            //console.log('index_list:', index_list);
+            //diametrically_opposed ? console.log('values: ', values) : null;
+        }
+
 
         return diametrically_opposed;
     }
