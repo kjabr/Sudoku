@@ -10,6 +10,7 @@
 
   <style>
       body {
+        font-size: 120%;
         max-width: 100%;
         height: 100vw;
         overflow: hidden;
@@ -432,6 +433,7 @@
 
         body {
             margin: 0px;
+            font-size: 100%;
         }
         .container{
             max-width: 100%;
@@ -928,26 +930,26 @@
                                 ['7', '8'], ['7', '9'],
                                 ['8', '9']] ;
             //need to check that two numbers share the same row or column at least 3 times
+
+            //Build an index_list object where each key represents a column (or row)
             for (i=0; i <9; i++){
-                index_list[i].push(a[i], b[i], c[i]);
-                index_list[i] = index_list[i].filter(e => e != "");
+                index_list[i].push(a[i], b[i], c[i]); //say i=0 then pick row1[0], row2[0], row3[0] (ie column 0)
+                index_list[i] = index_list[i].filter(e => e != ""); //exclude empties
             }
 
             index_list_keys = Object.keys(index_list);
 
             combo_list.forEach((item22, i22) => {
                 index_list_keys.forEach((item23, i23) => {
-                    //values[JSON.stringify(item22)] = 0;
+                    //does a particular column include both items from the combo_list?
                     if (index_list[item23].includes(item22[0]) && index_list[item23].includes(item22[1])) {
+                        //if yes then count it
                         values[JSON.stringify(item22)] ? values[JSON.stringify(item22)]++ 
                             : values[JSON.stringify(item22)] = 1;
                         values[JSON.stringify(item22)] >= 2 ? diametrically_opposed = true : null;
                     }
                 });
             });
-            
-            //console.log('index_list:', index_list);
-            //diametrically_opposed ? console.log('values: ', values) : null;
         }
 
 
